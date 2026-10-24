@@ -197,44 +197,38 @@ export default function CreateQuotePage() {
     }
 
     // Insert quote into Supabase
-    const { error: quoteError } = await supabase.from("quotes").insert([
-      {
-        prescription_id: prescription.id,
-        pharmacy_id,
-        items: validItems as any, // cast to Json
-        delivery_fee: Number.parseFloat(deliveryFee),
-        estimated_delivery: estimatedDelivery,
-        notes: quotationNotes,
-        status: "pending",
-      },
-    ]);
+    const { data: newQuote, error: quoteError } = await supabase
+      .from("quotes")
+      .insert([
+        {
+          prescription_id: prescription.id,
+          pharmacy_id,
+          items: validItems as any, // cast to Json
+          delivery_fee: Number.parseFloat(deliveryFee),
+          estimated_delivery: estimatedDelivery,
+          notes: quotationNotes,
+          status: "pending",
+        },
+      ])
+      .select("id")
+      .single();
     setLoading(false);
-    if (quoteError) {
+    if (quoteError || !newQuote) {
       toast({
         title: "Failed to submit quotation",
-        description: quoteError.message,
+        description: quoteError?.message ?? "The quotation could not be saved.",
         variant: "destructive",
       });
       return;
     }
 
-    // Call API route to send email with PDF
+    // Ask the server to email the patient. Only the id is sent: the server checks
+    // that this pharmacy owns the quote and loads the recipient and details itself.
     try {
-      const origin =
-        typeof window !== "undefined" ? window.location.origin : "";
       const res = await fetch("/api/send-quotation-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          patientName,
-          patientEmail,
-          prescription,
-          items: validItems,
-          deliveryFee,
-          estimatedDelivery,
-          notes: quotationNotes,
-          origin,
-        }),
+        body: JSON.stringify({ quoteId: newQuote.id }),
       });
       if (!res.ok) {
         toast({

@@ -32,18 +32,19 @@ pnpm run dev
 The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ## Environment Variables
-A pre-configured `.env` file is included for your convenience. **No local database setup is required**—the app connects to a cloud-hosted Supabase instance.
+Copy `.env.example` to `.env.local` and fill in your own values:
 
-## Test Credentials
-You can use the following test accounts to log in without creating your own users:
+| Variable | Where to get it |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Project Settings → API |
+| `EMAIL_USER`, `EMAIL_PASS` | The Gmail address that sends quotation emails, and a [Gmail App Password](https://support.google.com/accounts/answer/185833) for it (not your normal password) |
+| `NEXT_PUBLIC_SITE_URL` *(optional)* | Your deployed URL, used for links in emails (defaults to the request's origin) |
 
-### Test User Account
-- **Email:** test.user@example.com
-- **Password:** TestPassword123
+Never commit `.env.local` — it's already in `.gitignore`.
 
-### Test Admin Account  
-- **Email:** test.admin@example.com
-- **Password:** TestPassword123
+## Trying it out
+Sign up through the app to create accounts: one as a **user** (patient) and one as a **pharmacy**.
+Shared demo credentials are deliberately not published here.
 
 ---
 
