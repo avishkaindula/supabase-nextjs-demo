@@ -38,7 +38,7 @@ Copy `.env.example` to `.env.local` and fill in your own values:
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase dashboard → Project Settings → API |
 | `EMAIL_USER`, `EMAIL_PASS` | The Gmail address that sends quotation emails, and a [Gmail App Password](https://support.google.com/accounts/answer/185833) for it (not your normal password) |
-| `NEXT_PUBLIC_SITE_URL` *(optional)* | Your deployed URL, used for links in emails (defaults to the request's origin) |
+| `NEXT_PUBLIC_SITE_URL` | Your deployed URL, used for links in emails. Required in production unless you deploy on Vercel (which provides its production URL automatically); in local development it defaults to the request's origin |
 
 Never commit `.env.local` — it's already in `.gitignore`.
 

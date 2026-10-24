@@ -11,11 +11,18 @@ export function escapeHtml(value: unknown): string {
 }
 
 /**
- * Base URL for links in emails. Taken from configuration or the request itself,
- * never from the request body — otherwise a caller could point the link anywhere.
+ * Base URL for links in emails. Comes from configuration only — never from the
+ * request body or (in production) the Host header, which a caller can spoof to
+ * point the link at their own site.
  */
 export function getSiteUrl(request: Request): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin).replace(/\/$/, "");
+  const configured =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    // Set by Vercel itself on every deployment, not by the request.
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`);
+  if (configured) return configured.replace(/\/$/, "");
+  if (process.env.NODE_ENV === "development") return new URL(request.url).origin;
+  throw new Error("Set NEXT_PUBLIC_SITE_URL so email links point at your site");
 }
 
 /** Row ids sent by the browser: accept only short, plain identifiers. */
