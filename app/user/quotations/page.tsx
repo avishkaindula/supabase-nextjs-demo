@@ -61,7 +61,6 @@ export default function QuotationsPage() {
     Record<string, PharmacyProfile>
   >({});
   const [processing, setProcessing] = useState<string | null>(null); // quote id
-  const [patientName, setPatientName] = useState<string | null>(null);
 
   // Fetch all prescriptions for the current user and flatten all quotes
   useEffect(() => {
@@ -78,13 +77,6 @@ export default function QuotationsPage() {
           return;
         }
         const userId = userData.user.id;
-        // Fetch patient name
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("name")
-          .eq("id", userId)
-          .single();
-        setPatientName(profile?.name || null);
         const { data: prescriptions, error: prescError } = await supabase
           .from("prescriptions")
           .select("*, quotes(*)")
@@ -190,23 +182,13 @@ export default function QuotationsPage() {
           .eq("id", quote.prescription_id);
         if (prescError) throw new Error(prescError.message);
       }
-      // Send email to pharmacy
-      const pharmacy = quote.pharmacyProfile;
-      if (pharmacy?.email) {
-        const origin =
-          typeof window !== "undefined" ? window.location.origin : "";
+      // Ask the server to notify the pharmacy. Only the id is sent: the server checks
+      // that this user owns the prescription and loads the recipient and details itself.
+      if (quote.pharmacyProfile?.email) {
         await fetch("/api/send-quotation-status-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            pharmacyEmail: pharmacy.email,
-            pharmacyName: pharmacy.name,
-            patientName: patientName,
-            prescription: quote.prescription,
-            quote,
-            status: newStatus,
-            origin,
-          }),
+          body: JSON.stringify({ quoteId: quote.id }),
         });
       }
       toast({
